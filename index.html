@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1f6f8b">
+<title>Fivefold Quest</title>
+<style>
+:root{
+  --bg:#e9f0f5; --ink:#17232e; --tile:#ffffff; --line:#b9c7d3; --key:#d3dee8;
+  --hit:#1b8f7e; --near:#f2b72e; --miss:#6b7a89; --accent:#1f6f8b; --star:#d99a0b;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#13202b; --ink:#e8f0f6; --tile:#1d2d3b; --line:#38505f; --key:#32485b;
+    --hit:#25a894; --near:#d9a021; --miss:#465a6b; --accent:#3f95b5; --star:#f2b72e; color-scheme:dark}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;
+  font-family:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,sans-serif;
+  user-select:none;-webkit-user-select:none;overflow:hidden}
+button{font:inherit;color:inherit}
+.screen{display:flex;flex-direction:column;align-items:center;width:100%;flex:1;min-height:0}
+header{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px 8px}
+h1,h2{margin:0;font-weight:800}
+h1{font-size:28px;letter-spacing:.02em}
+h2{font-size:20px}
+.ghost{background:none;border:2px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px}
+.ghost:active{background:var(--key)}
+.pill{display:flex;align-items:center;gap:6px;background:var(--tile);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800}
+.coin{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--near);border:2px solid var(--star);vertical-align:-2px}
+
+#sum{width:100%;max-width:480px;padding:0 16px 4px;font-size:14px;font-weight:700;color:var(--miss)}
+#levels{width:100%;max-width:480px;flex:1;overflow-y:auto;padding:0 16px 24px}
+#levels h3{margin:18px 0 8px;font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.lv{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:var(--tile);border:2px solid var(--line);border-radius:12px;padding:0}
+.lv b{font-size:19px}
+.lv span{font-size:11px;color:var(--star);letter-spacing:1px}
+.lv.done{border-color:var(--hit)}
+.lv.next{background:var(--accent);border-color:var(--accent);color:#fff}
+.lv.next span{color:#fff}
+.lv:disabled{opacity:.4}
+.lv:not(:disabled):active{transform:scale(.95)}
+
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;min-height:0}
+#hb{display:flex;gap:6px}
+.slot{width:34px;height:34px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase}
+.slot.on{border:2px solid var(--hit);color:var(--hit)}
+#board{--cols:5;display:grid;grid-template-rows:repeat(6,1fr);gap:6px;
+  width:min(88vw,calc(var(--cols) * 62px),calc((100dvh - 400px) * var(--cols) / 6))}
+.row{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:6px}
+.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--tile);
+  border:2px solid var(--line);border-radius:10px;font-size:clamp(20px,7vw,32px);font-weight:800;text-transform:uppercase}
+.tile.filled{border-color:var(--ink);animation:pop .12s ease-out}
+.tile[data-s]{border-color:transparent;color:#fff}
+.tile[data-s=hit]{background:var(--hit)}
+.tile[data-s=near]{background:var(--near);color:#17232e}
+.tile[data-s=miss]{background:var(--miss)}
+.tile.flip{animation:flip .5s ease-in-out}
+.row.shake{animation:shake .4s}
+@keyframes pop{50%{transform:scale(1.08)}}
+@keyframes flip{50%{transform:rotateX(90deg)}}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+#hints{display:flex;gap:8px;padding:6px 12px}
+#hints button{border:2px solid var(--accent);background:none;border-radius:12px;padding:9px 12px;font-weight:700;font-size:14px;color:var(--ink)}
+#hints button:active{background:var(--key)}
+#kb{width:100%;max-width:480px;padding:4px 6px 12px;display:flex;flex-direction:column;gap:7px}
+.krow{display:flex;gap:5px;justify-content:center}
+.krow button{flex:1;max-width:44px;height:50px;border:0;border-radius:8px;background:var(--key);
+  font-weight:800;font-size:17px;text-transform:uppercase;padding:0}
+.krow button.wide{flex:1.5;max-width:66px;font-size:20px}
+.krow button:active{transform:scale(.94)}
+.krow button[data-s=hit]{background:var(--hit);color:#fff}
+.krow button[data-s=near]{background:var(--near);color:#17232e}
+.krow button[data-s=miss]{background:var(--miss);color:#fff;opacity:.7}
+.krow button:disabled{opacity:.2;text-decoration:line-through}
+
+#toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);left:50%;transform:translateX(-50%);
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;font-size:15px;
+  opacity:0;pointer-events:none;transition:opacity .2s;z-index:5;white-space:nowrap}
+#toast.on{opacity:1}
+#sheet{position:fixed;inset:0;background:rgba(10,20,30,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
+#sheet.on{display:flex}
+.card{background:var(--tile);width:100%;max-width:480px;border-radius:22px 22px 0 0;text-align:center;
+  padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.card h2{font-size:26px;margin-bottom:4px}
+.card p{margin:0 0 14px;font-size:16px}
+#stars{font-size:38px;color:var(--star);letter-spacing:6px;margin-bottom:6px}
+.primary{width:100%;border:0;border-radius:14px;padding:16px;background:var(--accent);color:#fff;font-weight:800;font-size:18px;margin-bottom:10px}
+.card .ghost{width:100%;padding:13px;font-size:16px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<section id="map" class="screen">
+  <header>
+    <h1>Fivefold Quest</h1>
+    <div class="pill"><i class="coin"></i><span id="c0"></span></div>
+  </header>
+  <div id="sum"></div>
+  <div id="levels"></div>
+</section>
+
+<section id="game" class="screen" hidden>
+  <header>
+    <button class="ghost" id="back" type="button">Levels</button>
+    <h2 id="lt"></h2>
+    <div class="pill"><i class="coin"></i><span id="c1"></span></div>
+  </header>
+  <main>
+    <div id="hb" aria-label="Revealed letters"></div>
+    <div id="board" aria-label="Game board"></div>
+  </main>
+  <div id="hints">
+    <button id="h1" type="button">Reveal a letter <i class="coin"></i> 20</button>
+    <button id="h2" type="button">Clear keys <i class="coin"></i> 10</button>
+  </div>
+  <div id="kb"></div>
+</section>
+
+<div id="toast" role="status"></div>
+<div id="sheet"><div class="card">
+  <div id="stars"></div>
+  <h2 id="rt"></h2><p id="rs"></p>
+  <button class="primary" id="go" type="button"></button>
+  <button class="ghost" id="tomap" type="button">Level map</button>
+</div></div>
+
+<script>
+/* ---------- Content: one word per level, grouped into chapters of 10 ---------- */
+const CHAPTERS = ['Meadow', 'Orchard', 'Harbor', 'Summit', 'Nightfall', 'Aurora'];
+const WORDS = (
+  // levels 1-15: four letters
+  'bake calm dusk echo farm gold hike iron jump kite lamp moon nest oval pond ' +
+  // levels 16-40: five letters
+  'apple brave crane flame grape house lemon mango night ocean piano river stone tiger vivid waltz yacht zebra amber charm drift ember frost glide haste ' +
+  // levels 41-60: six letters
+  'anchor basket candle dragon engine forest garden harbor island jungle kitten ladder market nature orange planet rocket silver tunnel window'
+).split(' ');
+const TOTAL = WORDS.length;          // 60 levels
+const TRIES = 6;
+const COST_REVEAL = 20, COST_CLEAR = 10;
+
+/* ---------- Saved progress ---------- */
+let save = { coins: 30, stars: [] };
+try { const s = JSON.parse(localStorage.getItem('fivefold-quest')); if (s) save = { ...save, ...s }; } catch (e) {}
+const persist = () => { try { localStorage.setItem('fivefold-quest', JSON.stringify(save)); } catch (e) {} };
+const starsOf = n => save.stars[n - 1] || 0;
+const unlocked = n => n === 1 || starsOf(n - 1) > 0;
+
+const $ = s => document.querySelector(s);
+const board = $('#board'), kb = $('#kb'), toast = $('#toast'), sheet = $('#sheet');
+function say(msg) { toast.textContent = msg; toast.classList.add('on'); clearTimeout(say.t); say.t = setTimeout(() => toast.classList.remove('on'), 1500); }
+function coins() { $('#c0').textContent = $('#c1').textContent = save.coins; }
+
+/* ---------- Level map ---------- */
+function showMap() {
+  $('#game').hidden = true; $('#map').hidden = false; sheet.classList.remove('on');
+  coins();
+  const total = save.stars.reduce((a, b) => a + (b || 0), 0);
+  $('#sum').textContent = total + ' of ' + TOTAL * 3 + ' stars collected';
+  const box = $('#levels'); box.innerHTML = '';
+  let nextEl = null;
+  for (let c = 0; c * 10 < TOTAL; c++) {
+    const h = document.createElement('h3'); h.textContent = CHAPTERS[c] || 'Chapter ' + (c + 1); box.appendChild(h);
+    const g = document.createElement('div'); g.className = 'grid';
+    for (let i = 1; i <= 10 && c * 10 + i <= TOTAL; i++) {
+      const n = c * 10 + i, s = starsOf(n);
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'lv';
+      b.disabled = !unlocked(n);
+      if (s) b.classList.add('done'); else if (unlocked(n)) { b.classList.add('next'); if (!nextEl) nextEl = b; }
+      b.innerHTML = '<b>' + n + '</b><span>' + (s ? '★'.repeat(s) + '☆'.repeat(3 - s) : (unlocked(n) ? 'Play' : '&nbsp;')) + '</span>';
+      b.onclick = () => start(n);
+      g.appendChild(b);
+    }
+    box.appendChild(g);
+  }
+  if (nextEl) nextEl.scrollIntoView({ block: 'center' });
+}
+
+/* ---------- Game state ---------- */
+let lvl, answer, len, row, guess, over, busy, keys, found, shown, past;
+
+function start(n) {
+  lvl = n; answer = WORDS[n - 1]; len = answer.length;
+  row = 0; guess = ''; over = false; busy = false; keys = {}; past = [];
+  found = Array(len).fill(false); shown = Array(len).fill('');
+  $('#map').hidden = true; $('#game').hidden = false; sheet.classList.remove('on');
+  $('#lt').textContent = 'Level ' + n;
+  board.style.setProperty('--cols', len);
+  buildBoard(); drawHintBar(); coins();
+}
+
+function buildBoard() {
+  board.innerHTML = '';
+  for (let r = 0; r < TRIES; r++) {
+    const d = document.createElement('div'); d.className = 'row';
+    for (let c = 0; c < len; c++) { const t = document.createElement('div'); t.className = 'tile'; d.appendChild(t); }
+    board.appendChild(d);
+  }
+  kb.innerHTML = '';
+  ['qwertyuiop', 'asdfghjkl', '⏎zxcvbnm⌫'].forEach(letters => {
+    const d = document.createElement('div'); d.className = 'krow';
+    [...letters].forEach(k => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = k; b.dataset.k = k;
+      if (k === '⏎' || k === '⌫') { b.className = 'wide'; b.setAttribute('aria-label', k === '⏎' ? 'Enter' : 'Delete'); }
+      d.appendChild(b);
+    });
+    kb.appendChild(d);
+  });
+}
+
+function drawHintBar() {
+  $('#hb').innerHTML = shown.map(l => '<div class="slot' + (l ? ' on' : '') + '">' + l + '</div>').join('');
+}
+
+const tiles = r => board.children[r].children;
+
+function press(k) {
+  if (over || busy) return;
+  if (k === '⏎') return submit();
+  if (k === '⌫') {
+    if (!guess) return;
+    guess = guess.slice(0, -1);
+    const t = tiles(row)[guess.length]; t.textContent = ''; t.classList.remove('filled');
+    return;
+  }
+  if (guess.length >= len) return;
+  const t = tiles(row)[guess.length]; t.textContent = k; t.classList.add('filled');
+  guess += k;
+}
+
+function score(g, a) {
+  const res = Array(a.length).fill('miss'), pool = {};
+  for (let i = 0; i < a.length; i++) { if (g[i] === a[i]) res[i] = 'hit'; else pool[a[i]] = (pool[a[i]] || 0) + 1; }
+  for (let i = 0; i < a.length; i++) { if (res[i] !== 'hit' && pool[g[i]] > 0) { res[i] = 'near'; pool[g[i]]--; } }
+  return res;
+}
+
+function submit() {
+  if (guess.length < len) {
+    const r = board.children[row]; r.classList.remove('shake'); void r.offsetWidth; r.classList.add('shake');
+    return say('Enter ' + len + ' letters');
+  }
+  busy = true;
+  const res = score(guess, answer), ts = tiles(row), g = guess;
+  res.forEach((s, i) => {
+    setTimeout(() => ts[i].classList.add('flip'), i * 280);
+    setTimeout(() => { ts[i].dataset.s = s; }, i * 280 + 250);
+  });
+  setTimeout(() => {
+    const rank = { miss: 1, near: 2, hit: 3 };
+    [...g].forEach((ch, i) => { if (!keys[ch] || rank[res[i]] > rank[keys[ch]]) keys[ch] = res[i]; });
+    paintKeys();
+    // coins earned along the way: +1 for each newly found correct letter
+    let gain = 0;
+    res.forEach((s, i) => { if (s === 'hit' && !found[i]) { found[i] = true; gain++; } });
+    if (gain) { save.coins += gain; persist(); coins(); say('+' + gain + (gain > 1 ? ' coins' : ' coin')); }
+    if (g === answer) return finish(true);
+    if (row === TRIES - 1) return finish(false);
+    row++; guess = ''; busy = false;
+  }, (len - 1) * 280 + 550);
+}
+
+function paintKeys() {
+  kb.querySelectorAll('button').forEach(b => {
+    const s = keys[b.dataset.k];
+    if (s === 'gone') b.disabled = true;
+    else if (s) b.dataset.s = s;
+  });
+}
+
+/* ---------- Hints (spend coins) ---------- */
+function spend(cost) {
+  if (save.coins < cost) { say('Not enough coins'); return false; }
+  save.coins -= cost; persist(); coins(); return true;
+}
+$('#h1').onclick = () => {
+  if (over || busy) return;
+  const open = [...Array(len).keys()].filter(i => !found[i] && !shown[i]);
+  if (!open.length) return say('Nothing left to reveal');
+  if (!spend(COST_REVEAL)) return;
+  const i = open[Math.floor(Math.random() * open.length)];
+  shown[i] = answer[i]; found[i] = true; drawHintBar();
+  say('Letter ' + (i + 1) + ' is ' + answer[i].toUpperCase());
+};
+$('#h2').onclick = () => {
+  if (over || busy) return;
+  const pool = [...'abcdefghijklmnopqrstuvwxyz'].filter(ch => !answer.includes(ch) && !keys[ch]);
+  if (!pool.length) return say('No keys left to clear');
+  if (!spend(COST_CLEAR)) return;
+  pool.sort(() => Math.random() - .5).slice(0, 5).forEach(ch => { keys[ch] = 'gone'; });
+  paintKeys(); say('Cleared ' + Math.min(5, pool.length) + ' wrong keys');
+};
+
+/* ---------- Result ---------- */
+function finish(win) {
+  over = true; busy = false;
+  let s = 0, bonus = 0;
+  if (win) {
+    const used = row + 1;
+    s = used <= 3 ? 3 : used <= 5 ? 2 : 1;
+    const prev = starsOf(lvl);
+    bonus = prev === 0 ? 10 + 5 * s : Math.max(0, s - prev) * 5;
+    save.stars[lvl - 1] = Math.max(prev, s);
+    save.coins += bonus;
+    persist(); coins();
+  }
+  $('#stars').textContent = win ? '★'.repeat(s) + '☆'.repeat(3 - s) : '';
+  $('#rt').textContent = win ? 'Level ' + lvl + ' complete' : 'Out of tries';
+  $('#rs').textContent = win
+    ? (bonus ? 'You earned ' + bonus + ' bonus coins.' : 'Beat your best for more coins.')
+    : 'The word was ' + answer.toUpperCase() + '.';
+  const go = $('#go');
+  if (win && lvl < TOTAL) { go.textContent = 'Next level'; go.onclick = () => start(lvl + 1); }
+  else if (win) { go.textContent = 'Back to the map'; go.onclick = showMap; }
+  else { go.textContent = 'Try again'; go.onclick = () => start(lvl); }
+  setTimeout(() => sheet.classList.add('on'), 500);
+}
+
+/* ---------- Wiring ---------- */
+kb.addEventListener('click', e => { const b = e.target.closest('button'); if (b) press(b.dataset.k); });
+document.addEventListener('keydown', e => {
+  if ($('#game').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter') press('⏎');
+  else if (e.key === 'Backspace') press('⌫');
+  else if (/^[a-z]$/i.test(e.key)) press(e.key.toLowerCase());
+});
+$('#back').onclick = showMap;
+$('#tomap').onclick = showMap;
+
+showMap();
+</script>
+</body>
+      </html>
+
