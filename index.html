@@ -1,344 +1,1655 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1f6f8b">
+<meta name="theme-color" content="#0b1020">
 <title>Fivefold Quest</title>
+
 <style>
-:root{
-  --bg:#e9f0f5; --ink:#17232e; --tile:#ffffff; --line:#b9c7d3; --key:#d3dee8;
-  --hit:#1b8f7e; --near:#f2b72e; --miss:#6b7a89; --accent:#1f6f8b; --star:#d99a0b;
-  color-scheme:light; box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+:root {
+  --bg: #0b1020;
+  --panel: #141b30;
+  --panel2: #1b2540;
+  --ink: #f5f7ff;
+  --muted: #9aa8c7;
+  --line: #303b5b;
+  --purple: #9b7bff;
+  --teal: #39e6c3;
+  --hit: #21b99a;
+  --near: #f2bd4b;
+  --miss: #45516c;
+  --star: #ffd66b;
+  --danger: #ff718b;
+  color-scheme: dark;
 }
-@media (prefers-color-scheme:dark){
-  :root{--bg:#13202b; --ink:#e8f0f6; --tile:#1d2d3b; --line:#38505f; --key:#32485b;
-    --hit:#25a894; --near:#d9a021; --miss:#465a6b; --accent:#3f95b5; --star:#f2b72e; color-scheme:dark}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-[hidden]{display:none!important}
-html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;
-  font-family:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,sans-serif;
-  user-select:none;-webkit-user-select:none;overflow:hidden}
-button{font:inherit;color:inherit}
-.screen{display:flex;flex-direction:column;align-items:center;width:100%;flex:1;min-height:0}
-header{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px 8px}
-h1,h2{margin:0;font-weight:800}
-h1{font-size:28px;letter-spacing:.02em}
-h2{font-size:20px}
-.ghost{background:none;border:2px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px}
-.ghost:active{background:var(--key)}
-.pill{display:flex;align-items:center;gap:6px;background:var(--tile);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800}
-.coin{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--near);border:2px solid var(--star);vertical-align:-2px}
 
-#sum{width:100%;max-width:480px;padding:0 16px 4px;font-size:14px;font-weight:700;color:var(--miss)}
-#levels{width:100%;max-width:480px;flex:1;overflow-y:auto;padding:0 16px 24px}
-#levels h3{margin:18px 0 8px;font-size:18px}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.lv{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  background:var(--tile);border:2px solid var(--line);border-radius:12px;padding:0}
-.lv b{font-size:19px}
-.lv span{font-size:11px;color:var(--star);letter-spacing:1px}
-.lv.done{border-color:var(--hit)}
-.lv.next{background:var(--accent);border-color:var(--accent);color:#fff}
-.lv.next span{color:#fff}
-.lv:disabled{opacity:.4}
-.lv:not(:disabled):active{transform:scale(.95)}
+[hidden] {
+  display: none !important;
+}
 
-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;min-height:0}
-#hb{display:flex;gap:6px}
-.slot{width:34px;height:34px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase}
-.slot.on{border:2px solid var(--hit);color:var(--hit)}
-#board{--cols:5;display:grid;grid-template-rows:repeat(6,1fr);gap:6px;
-  width:min(88vw,calc(var(--cols) * 62px),calc((100dvh - 400px) * var(--cols) / 6))}
-.row{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:6px}
-.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--tile);
-  border:2px solid var(--line);border-radius:10px;font-size:clamp(20px,7vw,32px);font-weight:800;text-transform:uppercase}
-.tile.filled{border-color:var(--ink);animation:pop .12s ease-out}
-.tile[data-s]{border-color:transparent;color:#fff}
-.tile[data-s=hit]{background:var(--hit)}
-.tile[data-s=near]{background:var(--near);color:#17232e}
-.tile[data-s=miss]{background:var(--miss)}
-.tile.flip{animation:flip .5s ease-in-out}
-.row.shake{animation:shake .4s}
-@keyframes pop{50%{transform:scale(1.08)}}
-@keyframes flip{50%{transform:rotateX(90deg)}}
-@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
 
-#hints{display:flex;gap:8px;padding:6px 12px}
-#hints button{border:2px solid var(--accent);background:none;border-radius:12px;padding:9px 12px;font-weight:700;font-size:14px;color:var(--ink)}
-#hints button:active{background:var(--key)}
-#kb{width:100%;max-width:480px;padding:4px 6px 12px;display:flex;flex-direction:column;gap:7px}
-.krow{display:flex;gap:5px;justify-content:center}
-.krow button{flex:1;max-width:44px;height:50px;border:0;border-radius:8px;background:var(--key);
-  font-weight:800;font-size:17px;text-transform:uppercase;padding:0}
-.krow button.wide{flex:1.5;max-width:66px;font-size:20px}
-.krow button:active{transform:scale(.94)}
-.krow button[data-s=hit]{background:var(--hit);color:#fff}
-.krow button[data-s=near]{background:var(--near);color:#17232e}
-.krow button[data-s=miss]{background:var(--miss);color:#fff;opacity:.7}
-.krow button:disabled{opacity:.2;text-decoration:line-through}
+body {
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(110, 80, 255, .15), transparent 45%),
+    radial-gradient(ellipse at 100% 100%, rgba(35, 222, 191, .09), transparent 40%),
+    var(--bg);
+  color: var(--ink);
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-#toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);left:50%;transform:translateX(-50%);
-  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;font-size:15px;
-  opacity:0;pointer-events:none;transition:opacity .2s;z-index:5;white-space:nowrap}
-#toast.on{opacity:1}
-#sheet{position:fixed;inset:0;background:rgba(10,20,30,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
-#sheet.on{display:flex}
-.card{background:var(--tile);width:100%;max-width:480px;border-radius:22px 22px 0 0;text-align:center;
-  padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px))}
-.card h2{font-size:26px;margin-bottom:4px}
-.card p{margin:0 0 14px;font-size:16px}
-#stars{font-size:38px;color:var(--star);letter-spacing:6px;margin-bottom:6px}
-.primary{width:100%;border:0;border-radius:14px;padding:16px;background:var(--accent);color:#fff;font-weight:800;font-size:18px;margin-bottom:10px}
-.card .ghost{width:100%;padding:13px;font-size:16px}
-@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+}
+
+.screen {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+header {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 16px 10px;
+}
+
+h1, h2, h3, p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: -.7px;
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.brand-gradient {
+  background: linear-gradient(110deg, #fff 15%, var(--purple) 55%, var(--teal));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ghost {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255,255,255,.035);
+  padding: 10px 13px;
+  font-size: 13px;
+  font-weight: 750;
+  transition: background .2s, transform .2s;
+}
+
+.ghost:active {
+  transform: scale(.97);
+  background: var(--panel2);
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: rgba(255,255,255,.04);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.coin {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffe99b, #f2a92b);
+  border: 2px solid #ffcf62;
+  box-shadow: 0 0 12px rgba(255,205,80,.2);
+}
+
+/* Welcome screen */
+
+#welcome {
+  position: relative;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.welcome-glow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(133, 92, 255, .17);
+  filter: blur(65px);
+  pointer-events: none;
+  animation: glow 5s ease-in-out infinite alternate;
+}
+
+.welcome-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 390px;
+  animation: rise .7s ease-out both;
+}
+
+.logo-mark {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 25px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  transform: rotate(-8deg);
+  animation: float 4s ease-in-out infinite;
+}
+
+.logo-mark span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17px;
+  font-size: 28px;
+  font-weight: 950;
+  background: linear-gradient(145deg, #292f54, #171e38);
+  border: 1px solid rgba(155,123,255,.65);
+  box-shadow: 0 0 24px rgba(139,106,255,.15);
+}
+
+.logo-mark span:nth-child(2),
+.logo-mark span:nth-child(3) {
+  color: var(--teal);
+  border-color: rgba(57,230,195,.5);
+}
+
+.logo-mark span:nth-child(1),
+.logo-mark span:nth-child(4) {
+  color: var(--purple);
+}
+
+.welcome-content h1 {
+  font-size: clamp(32px, 9vw, 43px);
+  line-height: 1.1;
+  letter-spacing: -1.7px;
+  margin-bottom: 14px;
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.7;
+  max-width: 310px;
+  margin: 0 auto 29px;
+}
+
+.eyebrow {
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 11px;
+  font-weight: 900;
+  margin-bottom: 13px;
+}
+
+.primary {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 15px;
+  padding: 16px;
+  background: linear-gradient(110deg, #8c6bff, #6e83ff 55%, #28cdb5);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .3px;
+  box-shadow: 0 9px 28px rgba(115,99,255,.24);
+  transition: transform .2s, filter .2s;
+}
+
+.primary:active {
+  transform: scale(.98);
+  filter: brightness(1.1);
+}
+
+.welcome-content .ghost {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px;
+  background: rgba(255,255,255,.035);
+}
+
+.welcome-foot {
+  color: #697796;
+  font-size: 11px;
+  margin-top: 28px;
+  letter-spacing: 1px;
+}
+
+/* Level map */
+
+#sum {
+  width: 100%;
+  max-width: 500px;
+  padding: 0 16px 10px;
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#levels {
+  width: 100%;
+  max-width: 500px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 24px;
+  overscroll-behavior: contain;
+}
+
+#levels h3 {
+  margin: 21px 0 10px;
+  font-size: 15px;
+  font-weight: 850;
+  color: #c5cce4;
+  letter-spacing: .4px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+}
+
+.lv {
+  aspect-ratio: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0;
+  background: linear-gradient(145deg, #18213a, #11182b);
+  transition: transform .15s, border-color .15s;
+}
+
+.lv b {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.lv span {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--star);
+}
+
+.lv.done {
+  border-color: rgba(33,185,154,.6);
+  background: linear-gradient(145deg, #123b3a, #14263a);
+}
+
+.lv.next {
+  border-color: var(--purple);
+  background: linear-gradient(145deg, #5741a4, #2b386e);
+  box-shadow: 0 0 18px rgba(155,123,255,.15);
+}
+
+.lv.next span {
+  color: #fff;
+}
+
+.lv:disabled {
+  opacity: .38;
+}
+
+.lv:not(:disabled):active {
+  transform: scale(.95);
+}
+
+/* Game screen */
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 0;
+}
+
+#hb {
+  display: flex;
+  gap: 6px;
+  min-height: 30px;
+}
+
+.slot {
+  width: 30px;
+  height: 30px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 850;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: rgba(57,230,195,.04);
+}
+
+.slot.on {
+  border: 1px solid var(--teal);
+  background: rgba(57,230,195,.1);
+}
+
+#board {
+  --cols: 5;
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+  width: min(88vw, calc(var(--cols) * 58px), calc((100dvh - 365px) * var(--cols) / 6));
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 6px;
+}
+
+.tile {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #17213a, #11182b);
+  border: 1px solid #394566;
+  border-radius: 10px;
+  font-size: clamp(19px, 6.5vw, 30px);
+  font-weight: 900;
+  text-transform: uppercase;
+  min-width: 0;
+}
+
+.tile.filled {
+  border-color: var(--purple);
+  animation: pop .12s ease-out;
+}
+
+.tile[data-s] {
+  border-color: transparent;
+  color: #fff;
+}
+
+.tile[data-s=hit] {
+  background: var(--hit);
+}
+
+.tile[data-s=near] {
+  background: var(--near);
+  color: #192033;
+}
+
+.tile[data-s=miss] {
+  background: var(--miss);
+}
+
+.tile.flip {
+  animation: flip .45s ease-in-out;
+}
+
+.row.shake {
+  animation: shake .4s;
+}
+
+@keyframes pop {
+  50% { transform: scale(1.08); }
+}
+
+@keyframes flip {
+  50% { transform: rotateX(90deg); }
+}
+
+@keyframes shake {
+  20%,60% { transform: translateX(-6px); }
+  40%,80% { transform: translateX(6px); }
+}
+
+#hints {
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px;
+}
+
+#hints button {
+  border: 1px solid #62539c;
+  background: rgba(155,123,255,.07);
+  border-radius: 12px;
+  padding: 10px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #e7e1ff;
+}
+
+#hints button:active {
+  background: var(--panel2);
+}
+
+#kb {
+  width: 100%;
+  max-width: 500px;
+  padding: 4px 6px calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.krow {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.krow button {
+  flex: 1;
+  max-width: 44px;
+  min-width: 0;
+  height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: #27324e;
+  font-weight: 850;
+  font-size: 16px;
+  text-transform: uppercase;
+  padding: 0;
+}
+
+.krow button.wide {
+  flex: 1.5;
+  max-width: 65px;
+  font-size: 19px;
+}
+
+.krow button:active {
+  transform: scale(.94);
+}
+
+.krow button[data-s=hit] {
+  background: var(--hit);
+  color: #fff;
+}
+
+.krow button[data-s=near] {
+  background: var(--near);
+  color: #192033;
+}
+
+.krow button[data-s=miss] {
+  background: var(--miss);
+  color: #fff;
+  opacity: .7;
+}
+
+.krow button:disabled {
+  opacity: .2;
+  text-decoration: line-through;
+}
+
+/* Toast */
+
+#toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 65px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f5f7ff;
+  color: #10172a;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+  z-index: 30;
+  max-width: 90vw;
+  text-align: center;
+}
+
+#toast.on {
+  opacity: 1;
+}
+
+/* Result and tutorial overlays */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,7,17,.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 16px;
+}
+
+.overlay.on {
+  display: flex;
+}
+
+.card {
+  background: linear-gradient(155deg, #1c2643, #10172a);
+  border: 1px solid #3a4567;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 24px;
+  text-align: center;
+  padding: 25px 21px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  box-shadow: 0 20px 80px rgba(0,0,0,.35);
+  animation: rise .25s ease-out;
+}
+
+.card h2 {
+  font-size: 25px;
+  margin-bottom: 8px;
+}
+
+.card p {
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 14px;
+  margin-bottom: 17px;
+}
+
+.card .ghost {
+  width: 100%;
+  padding: 13px;
+  margin-top: 9px;
+}
+
+#stars {
+  font-size: 34px;
+  color: var(--star);
+  letter-spacing: 5px;
+  margin-bottom: 9px;
+}
+
+.tutorial-card {
+  text-align: left;
+}
+
+.tutorial-card h2 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.tutorial-sub {
+  text-align: center;
+}
+
+.tutorial-step {
+  color: var(--teal);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.rule {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 16px 0;
+}
+
+.rule-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(155,123,255,.12);
+  font-size: 18px;
+}
+
+.rule strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.rule small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.example {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 18px 0 9px;
+}
+
+.example .tile {
+  width: 43px;
+  height: 43px;
+  aspect-ratio: 1;
+  font-size: 20px;
+  border-radius: 8px;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 10px 0;
+  font-size: 12px;
+  color: #dbe2f7;
+}
+
+.legend .swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.tutorial-footer {
+  display: flex;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.tutorial-footer button {
+  flex: 1;
+}
+
+.tutorial-footer .ghost {
+  margin-top: 0;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #414d6d;
+}
+
+.dots span.active {
+  width: 20px;
+  border-radius: 99px;
+  background: var(--teal);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-8px) rotate(-4deg); }
+}
+
+@keyframes glow {
+  from { transform: scale(.9); opacity: .6; }
+  to { transform: scale(1.15); opacity: 1; }
+}
+
+@media (max-height: 700px) {
+  .logo-mark {
+    width: 72px;
+    height: 72px;
+    gap: 5px;
+    margin-bottom: 15px;
+  }
+
+  .logo-mark span {
+    border-radius: 12px;
+    font-size: 20px;
+  }
+
+  .welcome-content h1 {
+    font-size: 32px;
+  }
+
+  .tagline {
+    margin-bottom: 17px;
+  }
+
+  .welcome-foot {
+    margin-top: 17px;
+  }
+
+  #board {
+    width: min(82vw, calc(var(--cols) * 48px), calc((100dvh - 335px) * var(--cols) / 6));
+  }
+
+  .krow button {
+    height: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 </style>
 </head>
+
 <body>
 
-<section id="map" class="screen">
+<!-- WELCOME SCREEN -->
+<section id="welcome" class="screen">
+  <div class="welcome-glow"></div>
+
+  <div class="welcome-content">
+    <div class="logo-mark" aria-hidden="true">
+      <span>F</span><span>Q</span>
+      <span>5</span><span>★</span>
+    </div>
+
+    <div class="eyebrow">A word adventure</div>
+    <h1 class="brand-gradient">Fivefold Quest</h1>
+
+    <p class="tagline">
+      Think smart. Find the word.<br>
+      Unlock your next adventure.
+    </p>
+
+    <button class="primary" id="startAdventure" type="button">
+      START ADVENTURE&nbsp; →
+    </button>
+
+    <button class="ghost" id="welcomeHow" type="button">
+      How to play
+    </button>
+
+    <div class="welcome-foot">60 LEVELS · 6 CHAPTERS · ENDLESS THINKING</div>
+  </div>
+</section>
+
+<!-- LEVEL MAP -->
+<section id="map" class="screen" hidden>
   <header>
-    <h1>Fivefold Quest</h1>
-    <div class="pill"><i class="coin"></i><span id="c0"></span></div>
+    <h1 class="brand-gradient">Fivefold Quest</h1>
+    <div class="pill"><i class="coin"></i><span id="c0">30</span></div>
   </header>
-  <div id="sum"></div>
+
+  <div id="sum">
+    <span id="starSummary">0 of 180 stars collected</span>
+    <button class="ghost" id="mapHow" type="button">How to play</button>
+  </div>
+
   <div id="levels"></div>
 </section>
 
+<!-- GAME -->
 <section id="game" class="screen" hidden>
   <header>
-    <button class="ghost" id="back" type="button">Levels</button>
+    <button class="ghost" id="back" type="button">← Levels</button>
     <h2 id="lt"></h2>
-    <div class="pill"><i class="coin"></i><span id="c1"></span></div>
+    <div class="pill"><i class="coin"></i><span id="c1">30</span></div>
   </header>
+
   <main>
     <div id="hb" aria-label="Revealed letters"></div>
     <div id="board" aria-label="Game board"></div>
   </main>
+
   <div id="hints">
-    <button id="h1" type="button">Reveal a letter <i class="coin"></i> 20</button>
-    <button id="h2" type="button">Clear keys <i class="coin"></i> 10</button>
+    <button id="h1" type="button">💡 Reveal letter · 20</button>
+    <button id="h2" type="button">🚫 Clear keys · 10</button>
   </div>
+
   <div id="kb"></div>
 </section>
 
-<div id="toast" role="status"></div>
-<div id="sheet"><div class="card">
-  <div id="stars"></div>
-  <h2 id="rt"></h2><p id="rs"></p>
-  <button class="primary" id="go" type="button"></button>
-  <button class="ghost" id="tomap" type="button">Level map</button>
-</div></div>
+<!-- TOAST -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- RESULT WINDOW -->
+<div id="sheet" class="overlay">
+  <div class="card">
+    <div id="stars"></div>
+    <h2 id="rt"></h2>
+    <p id="rs"></p>
+    <button class="primary" id="go" type="button"></button>
+    <button class="ghost" id="tomap" type="button">Level map</button>
+  </div>
+</div>
+
+<!-- HOW TO PLAY TUTORIAL -->
+<div id="tutorial" class="overlay" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+  <div class="card tutorial-card">
+    <div class="tutorial-step" id="tutorialStep">GUIDE 1 OF 2</div>
+    <h2 id="tutorialTitle">How to play</h2>
+    <p class="tutorial-sub" id="tutorialSubtitle">
+      Find the hidden word in six tries.
+    </p>
+
+    <div id="tutorialPage1">
+      <div class="rule">
+        <div class="rule-icon">🔤</div>
+        <div>
+          <strong>Guess the hidden word</strong>
+          <small>Enter a word with the correct number of letters, then press Enter. You have six attempts.</small>
+        </div>
+      </div>
+
+      <div class="example" aria-label="Example word with colored feedback">
+        <div class="tile" data-s="hit">C</div>
+        <div class="tile" data-s="near">R</div>
+        <div class="tile" data-s="miss">A</div>
+        <div class="tile">N</div>
+        <div class="tile">E</div>
+      </div>
+
+      <div class="legend">
+        <span class="swatch" style="background:var(--hit)"></span>
+        <span><strong>Green:</strong> correct letter, correct position.</span>
+      </div>
+
+      <div class="legend">
+        <span class="swatch" style="background:var(--near)"></span>
+        <span><strong>Yellow:</strong> correct letter, wrong position.</span>
+      </div>
+
+      <div class="legend">
+        <span class="swatch" style="background:var(--miss)"></span>
+        <span><strong>Gray:</strong> the letter isn't needed in the word.</span>
+      </div>
+    </div>
+
+    <div id="tutorialPage2" hidden>
+      <div class="rule">
+        <div class="rule-icon">⌨️</div>
+        <div>
+          <strong>Use the keyboard</strong>
+          <small>Tap letters to type. Press Enter to submit a guess and the delete key to remove a letter.</small>
+        </div>
+      </div>
+
+      <div class="rule">
+        <div class="rule-icon">💡</div>
+        <div>
+          <strong>Use hints wisely</strong>
+          <small>Spend 20 coins to reveal a letter, or 10 coins to clear some incorrect keyboard keys.</small>
+        </div>
+      </div>
+
+      <div class="rule">
+        <div class="rule-icon">⭐</div>
+        <div>
+          <strong>Earn stars and coins</strong>
+          <small>Finish a level to earn stars and bonus coins. Solving the word in fewer attempts earns more stars.</small>
+        </div>
+      </div>
+
+      <div class="rule">
+        <div class="rule-icon">🗺️</div>
+        <div>
+          <strong>Explore all six chapters</strong>
+          <small>Complete levels to unlock the next ones. Word lengths change as your adventure progresses.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="dots" aria-hidden="true">
+      <span id="dot1" class="active"></span>
+      <span id="dot2"></span>
+    </div>
+
+    <div class="tutorial-footer">
+      <button class="ghost" id="tutorialBack" type="button">Close</button>
+      <button class="primary" id="tutorialNext" type="button">Next →</button>
+    </div>
+  </div>
+</div>
 
 <script>
-/* ---------- Content: one word per level, grouped into chapters of 10 ---------- */
-const CHAPTERS = ['Meadow', 'Orchard', 'Harbor', 'Summit', 'Nightfall', 'Aurora'];
+/* ---------- WORDS AND CHAPTERS ---------- */
+
+const CHAPTERS = [
+  'Meadow',
+  'Orchard',
+  'Harbor',
+  'Summit',
+  'Nightfall',
+  'Aurora'
+];
+
 const WORDS = (
-  // levels 1-15: four letters
   'bake calm dusk echo farm gold hike iron jump kite lamp moon nest oval pond ' +
-  // levels 16-40: five letters
   'apple brave crane flame grape house lemon mango night ocean piano river stone tiger vivid waltz yacht zebra amber charm drift ember frost glide haste ' +
-  // levels 41-60: six letters
   'anchor basket candle dragon engine forest garden harbor island jungle kitten ladder market nature orange planet rocket silver tunnel window'
 ).split(' ');
-const TOTAL = WORDS.length;          // 60 levels
-const TRIES = 6;
-const COST_REVEAL = 20, COST_CLEAR = 10;
 
-/* ---------- Saved progress ---------- */
+const TOTAL = WORDS.length;
+const TRIES = 6;
+const COST_REVEAL = 20;
+const COST_CLEAR = 10;
+
+/* ---------- SAVED PROGRESS ---------- */
+
 let save = { coins: 30, stars: [] };
-try { const s = JSON.parse(localStorage.getItem('fivefold-quest')); if (s) save = { ...save, ...s }; } catch (e) {}
-const persist = () => { try { localStorage.setItem('fivefold-quest', JSON.stringify(save)); } catch (e) {} };
+
+try {
+  const stored = JSON.parse(localStorage.getItem('fivefold-quest'));
+
+  if (stored) {
+    save = { ...save, ...stored };
+  }
+} catch (e) {
+  // Start with default progress if saved data cannot be read.
+}
+
+if (!Number.isFinite(save.coins)) save.coins = 30;
+if (!Array.isArray(save.stars)) save.stars = [];
+
+const persist = () => {
+  try {
+    localStorage.setItem('fivefold-quest', JSON.stringify(save));
+  } catch (e) {
+    say('Progress could not be saved on this device');
+  }
+};
+
 const starsOf = n => save.stars[n - 1] || 0;
 const unlocked = n => n === 1 || starsOf(n - 1) > 0;
 
-const $ = s => document.querySelector(s);
-const board = $('#board'), kb = $('#kb'), toast = $('#toast'), sheet = $('#sheet');
-function say(msg) { toast.textContent = msg; toast.classList.add('on'); clearTimeout(say.t); say.t = setTimeout(() => toast.classList.remove('on'), 1500); }
-function coins() { $('#c0').textContent = $('#c1').textContent = save.coins; }
+/* ---------- ELEMENTS ---------- */
 
-/* ---------- Level map ---------- */
-function showMap() {
-  $('#game').hidden = true; $('#map').hidden = false; sheet.classList.remove('on');
-  coins();
-  const total = save.stars.reduce((a, b) => a + (b || 0), 0);
-  $('#sum').textContent = total + ' of ' + TOTAL * 3 + ' stars collected';
-  const box = $('#levels'); box.innerHTML = '';
-  let nextEl = null;
-  for (let c = 0; c * 10 < TOTAL; c++) {
-    const h = document.createElement('h3'); h.textContent = CHAPTERS[c] || 'Chapter ' + (c + 1); box.appendChild(h);
-    const g = document.createElement('div'); g.className = 'grid';
-    for (let i = 1; i <= 10 && c * 10 + i <= TOTAL; i++) {
-      const n = c * 10 + i, s = starsOf(n);
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'lv';
-      b.disabled = !unlocked(n);
-      if (s) b.classList.add('done'); else if (unlocked(n)) { b.classList.add('next'); if (!nextEl) nextEl = b; }
-      b.innerHTML = '<b>' + n + '</b><span>' + (s ? '★'.repeat(s) + '☆'.repeat(3 - s) : (unlocked(n) ? 'Play' : '&nbsp;')) + '</span>';
-      b.onclick = () => start(n);
-      g.appendChild(b);
-    }
-    box.appendChild(g);
-  }
-  if (nextEl) nextEl.scrollIntoView({ block: 'center' });
+const $ = selector => document.querySelector(selector);
+
+const board = $('#board');
+const kb = $('#kb');
+const toast = $('#toast');
+const sheet = $('#sheet');
+const tutorial = $('#tutorial');
+
+function say(message) {
+  toast.textContent = message;
+  toast.classList.add('on');
+
+  clearTimeout(say.timer);
+
+  say.timer = setTimeout(() => {
+    toast.classList.remove('on');
+  }, 1700);
 }
 
-/* ---------- Game state ---------- */
-let lvl, answer, len, row, guess, over, busy, keys, found, shown, past;
+function coins() {
+  $('#c0').textContent = save.coins;
+  $('#c1').textContent = save.coins;
+}
+
+/* ---------- SCREEN NAVIGATION ---------- */
+
+function showWelcome() {
+  $('#welcome').hidden = false;
+  $('#map').hidden = true;
+  $('#game').hidden = true;
+  sheet.classList.remove('on');
+  tutorial.classList.remove('on');
+}
+
+function showMap() {
+  $('#welcome').hidden = true;
+  $('#game').hidden = true;
+  $('#map').hidden = false;
+
+  sheet.classList.remove('on');
+  tutorial.classList.remove('on');
+
+  coins();
+
+  const totalStars = save.stars.reduce(
+    (sum, amount) => sum + (amount || 0),
+    0
+  );
+
+  $('#starSummary').textContent =
+    totalStars + ' of ' + TOTAL * 3 + ' stars collected';
+
+  const box = $('#levels');
+  box.innerHTML = '';
+
+  let nextEl = null;
+
+  for (let c = 0; c * 10 < TOTAL; c++) {
+    const heading = document.createElement('h3');
+    heading.textContent = CHAPTERS[c] || 'Chapter ' + (c + 1);
+    box.appendChild(heading);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    for (let i = 1; i <= 10 && c * 10 + i <= TOTAL; i++) {
+      const n = c * 10 + i;
+      const stars = starsOf(n);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'lv';
+      button.disabled = !unlocked(n);
+
+      if (stars) {
+        button.classList.add('done');
+      } else if (unlocked(n)) {
+        button.classList.add('next');
+        if (!nextEl) nextEl = button;
+      }
+
+      const label = stars
+        ? '★'.repeat(stars) + '☆'.repeat(3 - stars)
+        : (unlocked(n) ? 'PLAY' : 'LOCKED');
+
+      button.innerHTML =
+        '<b>' + n + '</b><span>' + label + '</span>';
+
+      button.addEventListener('click', () => start(n));
+
+      grid.appendChild(button);
+    }
+
+    box.appendChild(grid);
+  }
+
+  // Keep the next available level visible without jumping to the top.
+  if (nextEl) {
+    const rect = nextEl.getBoundingClientRect();
+    const mapRect = box.getBoundingClientRect();
+
+    if (rect.bottom > mapRect.bottom || rect.top < mapRect.top) {
+      nextEl.scrollIntoView({ block: 'center' });
+    }
+  }
+
+  coins();
+}
+
+/* ---------- TUTORIAL ---------- */
+
+let tutorialPage = 1;
+let tutorialReturn = 'welcome';
+
+function openTutorial(returnTo) {
+  tutorialReturn = returnTo || 'welcome';
+  tutorialPage = 1;
+  renderTutorial();
+  tutorial.classList.add('on');
+}
+
+function renderTutorial() {
+  const firstPage = tutorialPage === 1;
+
+  $('#tutorialPage1').hidden = !firstPage;
+  $('#tutorialPage2').hidden = firstPage;
+
+  $('#tutorialStep').textContent =
+    'GUIDE ' + tutorialPage + ' OF 2';
+
+  $('#tutorialTitle').textContent =
+    firstPage ? 'How to play' : 'Your adventure';
+
+  $('#tutorialSubtitle').textContent =
+    firstPage
+      ? 'Find the hidden word in six tries.'
+      : 'Use your clues, collect rewards, and keep exploring.';
+
+  $('#dot1').classList.toggle('active', firstPage);
+  $('#dot2').classList.toggle('active', !firstPage);
+
+  $('#tutorialBack').textContent =
+    firstPage ? 'Close' : '← Back';
+
+  $('#tutorialNext').textContent =
+    firstPage ? 'Next →' : 'Got it!';
+
+  $('#tutorialNext').style.background =
+    'linear-gradient(110deg, #8c6bff, #6e83ff 55%, #28cdb5)';
+}
+
+function closeTutorial() {
+  tutorial.classList.remove('on');
+
+  if (tutorialReturn === 'map') {
+    showMap();
+  } else {
+    showWelcome();
+  }
+}
+
+$('#tutorialNext').addEventListener('click', () => {
+  if (tutorialPage === 1) {
+    tutorialPage = 2;
+    renderTutorial();
+  } else {
+    closeTutorial();
+  }
+});
+
+$('#tutorialBack').addEventListener('click', () => {
+  if (tutorialPage === 2) {
+    tutorialPage = 1;
+    renderTutorial();
+  } else {
+    closeTutorial();
+  }
+});
+
+$('#welcomeHow').addEventListener('click', () => {
+  openTutorial('welcome');
+});
+
+$('#mapHow').addEventListener('click', () => {
+  openTutorial('map');
+});
+
+$('#startAdventure').addEventListener('click', () => {
+  showMap();
+});
+
+/* ---------- GAME STATE ---------- */
+
+let lvl;
+let answer;
+let len;
+let row;
+let guess;
+let over;
+let busy;
+let keys;
+let found;
+let shown;
+let guessHistory;
 
 function start(n) {
-  lvl = n; answer = WORDS[n - 1]; len = answer.length;
-  row = 0; guess = ''; over = false; busy = false; keys = {}; past = [];
-  found = Array(len).fill(false); shown = Array(len).fill('');
-  $('#map').hidden = true; $('#game').hidden = false; sheet.classList.remove('on');
+  lvl = n;
+  answer = WORDS[n - 1];
+  len = answer.length;
+
+  row = 0;
+  guess = '';
+  over = false;
+  busy = false;
+  keys = {};
+  guessHistory = [];
+  found = Array(len).fill(false);
+  shown = Array(len).fill('');
+
+  $('#welcome').hidden = true;
+  $('#map').hidden = true;
+  $('#game').hidden = false;
+
+  sheet.classList.remove('on');
+  tutorial.classList.remove('on');
+
   $('#lt').textContent = 'Level ' + n;
+
   board.style.setProperty('--cols', len);
-  buildBoard(); drawHintBar(); coins();
+
+  buildBoard();
+  drawHintBar();
+  coins();
 }
+
+/* ---------- BOARD AND KEYBOARD ---------- */
 
 function buildBoard() {
   board.innerHTML = '';
+
   for (let r = 0; r < TRIES; r++) {
-    const d = document.createElement('div'); d.className = 'row';
-    for (let c = 0; c < len; c++) { const t = document.createElement('div'); t.className = 'tile'; d.appendChild(t); }
-    board.appendChild(d);
+    const line = document.createElement('div');
+    line.className = 'row';
+    line.style.setProperty('--cols', len);
+
+    for (let c = 0; c < len; c++) {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      line.appendChild(tile);
+    }
+
+    board.appendChild(line);
   }
+
   kb.innerHTML = '';
+
   ['qwertyuiop', 'asdfghjkl', '⏎zxcvbnm⌫'].forEach(letters => {
-    const d = document.createElement('div'); d.className = 'krow';
-    [...letters].forEach(k => {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = k; b.dataset.k = k;
-      if (k === '⏎' || k === '⌫') { b.className = 'wide'; b.setAttribute('aria-label', k === '⏎' ? 'Enter' : 'Delete'); }
-      d.appendChild(b);
+    const line = document.createElement('div');
+    line.className = 'krow';
+
+    [...letters].forEach(key => {
+      const button = document.createElement('button');
+
+      button.type = 'button';
+      button.textContent = key;
+      button.dataset.k = key;
+
+      if (key === '⏎' || key === '⌫') {
+        button.className = 'wide';
+        button.setAttribute(
+          'aria-label',
+          key === '⏎' ? 'Enter' : 'Delete'
+        );
+      }
+
+      line.appendChild(button);
     });
-    kb.appendChild(d);
+
+    kb.appendChild(line);
   });
 }
 
 function drawHintBar() {
-  $('#hb').innerHTML = shown.map(l => '<div class="slot' + (l ? ' on' : '') + '">' + l + '</div>').join('');
+  $('#hb').innerHTML = shown.map(letter => {
+    const slot = document.createElement('div');
+    slot.className = 'slot' + (letter ? ' on' : '');
+    slot.textContent = letter;
+    return slot.outerHTML;
+  }).join('');
 }
 
 const tiles = r => board.children[r].children;
 
-function press(k) {
+/* ---------- INPUT ---------- */
+
+function press(key) {
   if (over || busy) return;
-  if (k === '⏎') return submit();
-  if (k === '⌫') {
-    if (!guess) return;
-    guess = guess.slice(0, -1);
-    const t = tiles(row)[guess.length]; t.textContent = ''; t.classList.remove('filled');
+
+  if (key === '⏎') {
+    submit();
     return;
   }
+
+  if (key === '⌫') {
+    if (!guess) return;
+
+    guess = guess.slice(0, -1);
+
+    const tile = tiles(row)[guess.length];
+    tile.textContent = '';
+    tile.classList.remove('filled');
+
+    return;
+  }
+
+  if (!/^[a-z]$/.test(key)) return;
   if (guess.length >= len) return;
-  const t = tiles(row)[guess.length]; t.textContent = k; t.classList.add('filled');
-  guess += k;
+
+  const tile = tiles(row)[guess.length];
+
+  tile.textContent = key;
+  tile.classList.add('filled');
+
+  guess += key;
 }
 
+/* ---------- WORD SCORING ---------- */
+
 function score(g, a) {
-  const res = Array(a.length).fill('miss'), pool = {};
-  for (let i = 0; i < a.length; i++) { if (g[i] === a[i]) res[i] = 'hit'; else pool[a[i]] = (pool[a[i]] || 0) + 1; }
-  for (let i = 0; i < a.length; i++) { if (res[i] !== 'hit' && pool[g[i]] > 0) { res[i] = 'near'; pool[g[i]]--; } }
-  return res;
+  const result = Array(a.length).fill('miss');
+  const pool = {};
+
+  // First mark exact matches.
+  for (let i = 0; i < a.length; i++) {
+    if (g[i] === a[i]) {
+      result[i] = 'hit';
+    } else {
+      pool[a[i]] = (pool[a[i]] || 0) + 1;
+    }
+  }
+
+  // Then mark letters that appear in another position.
+  for (let i = 0; i < a.length; i++) {
+    if (
+      result[i] !== 'hit' &&
+      pool[g[i]] > 0
+    ) {
+      result[i] = 'near';
+      pool[g[i]]--;
+    }
+  }
+
+  return result;
 }
+
+/* ---------- SUBMIT GUESS ---------- */
 
 function submit() {
   if (guess.length < len) {
-    const r = board.children[row]; r.classList.remove('shake'); void r.offsetWidth; r.classList.add('shake');
-    return say('Enter ' + len + ' letters');
+    const line = board.children[row];
+
+    line.classList.remove('shake');
+    void line.offsetWidth;
+    line.classList.add('shake');
+
+    say('Enter ' + len + ' letters');
+    return;
   }
+
   busy = true;
-  const res = score(guess, answer), ts = tiles(row), g = guess;
-  res.forEach((s, i) => {
-    setTimeout(() => ts[i].classList.add('flip'), i * 280);
-    setTimeout(() => { ts[i].dataset.s = s; }, i * 280 + 250);
+
+  const result = score(guess, answer);
+  const currentTiles = tiles(row);
+  const currentGuess = guess;
+
+  result.forEach((state, i) => {
+    setTimeout(() => {
+      currentTiles[i].classList.add('flip');
+    }, i * 250);
+
+    setTimeout(() => {
+      currentTiles[i].dataset.s = state;
+    }, i * 250 + 220);
   });
+
   setTimeout(() => {
     const rank = { miss: 1, near: 2, hit: 3 };
-    [...g].forEach((ch, i) => { if (!keys[ch] || rank[res[i]] > rank[keys[ch]]) keys[ch] = res[i]; });
+
+    [...currentGuess].forEach((character, i) => {
+      if (
+        !keys[character] ||
+        rank[result[i]] > rank[keys[character]]
+      ) {
+        keys[character] = result[i];
+      }
+    });
+
     paintKeys();
-    // coins earned along the way: +1 for each newly found correct letter
+
+    // Award coins for newly discovered exact letter positions.
     let gain = 0;
-    res.forEach((s, i) => { if (s === 'hit' && !found[i]) { found[i] = true; gain++; } });
-    if (gain) { save.coins += gain; persist(); coins(); say('+' + gain + (gain > 1 ? ' coins' : ' coin')); }
-    if (g === answer) return finish(true);
-    if (row === TRIES - 1) return finish(false);
-    row++; guess = ''; busy = false;
-  }, (len - 1) * 280 + 550);
+
+    result.forEach((state, i) => {
+      if (state === 'hit' && !found[i]) {
+        found[i] = true;
+        gain++;
+      }
+    });
+
+    if (gain) {
+      save.coins += gain;
+      persist();
+      coins();
+      say('+' + gain + (gain > 1 ? ' coins' : ' coin'));
+    }
+
+    if (currentGuess === answer) {
+      finish(true);
+      return;
+    }
+
+    if (row === TRIES - 1) {
+      finish(false);
+      return;
+    }
+
+    row++;
+    guess = '';
+    busy = false;
+  }, (len - 1) * 250 + 500);
 }
 
+/* ---------- KEYBOARD COLORS ---------- */
+
 function paintKeys() {
-  kb.querySelectorAll('button').forEach(b => {
-    const s = keys[b.dataset.k];
-    if (s === 'gone') b.disabled = true;
-    else if (s) b.dataset.s = s;
+  kb.querySelectorAll('button').forEach(button => {
+    const state = keys[button.dataset.k];
+
+    if (state === 'gone') {
+      button.disabled = true;
+    } else if (state) {
+      button.dataset.s = state;
+    }
   });
 }
 
-/* ---------- Hints (spend coins) ---------- */
+/* ---------- COIN SPENDING ---------- */
+
 function spend(cost) {
-  if (save.coins < cost) { say('Not enough coins'); return false; }
-  save.coins -= cost; persist(); coins(); return true;
-}
-$('#h1').onclick = () => {
-  if (over || busy) return;
-  const open = [...Array(len).keys()].filter(i => !found[i] && !shown[i]);
-  if (!open.length) return say('Nothing left to reveal');
-  if (!spend(COST_REVEAL)) return;
-  const i = open[Math.floor(Math.random() * open.length)];
-  shown[i] = answer[i]; found[i] = true; drawHintBar();
-  say('Letter ' + (i + 1) + ' is ' + answer[i].toUpperCase());
-};
-$('#h2').onclick = () => {
-  if (over || busy) return;
-  const pool = [...'abcdefghijklmnopqrstuvwxyz'].filter(ch => !answer.includes(ch) && !keys[ch]);
-  if (!pool.length) return say('No keys left to clear');
-  if (!spend(COST_CLEAR)) return;
-  pool.sort(() => Math.random() - .5).slice(0, 5).forEach(ch => { keys[ch] = 'gone'; });
-  paintKeys(); say('Cleared ' + Math.min(5, pool.length) + ' wrong keys');
-};
-
-/* ---------- Result ---------- */
-function finish(win) {
-  over = true; busy = false;
-  let s = 0, bonus = 0;
-  if (win) {
-    const used = row + 1;
-    s = used <= 3 ? 3 : used <= 5 ? 2 : 1;
-    const prev = starsOf(lvl);
-    bonus = prev === 0 ? 10 + 5 * s : Math.max(0, s - prev) * 5;
-    save.stars[lvl - 1] = Math.max(prev, s);
-    save.coins += bonus;
-    persist(); coins();
+  if (save.coins < cost) {
+    say('Not enough coins');
+    return false;
   }
-  $('#stars').textContent = win ? '★'.repeat(s) + '☆'.repeat(3 - s) : '';
-  $('#rt').textContent = win ? 'Level ' + lvl + ' complete' : 'Out of tries';
-  $('#rs').textContent = win
-    ? (bonus ? 'You earned ' + bonus + ' bonus coins.' : 'Beat your best for more coins.')
-    : 'The word was ' + answer.toUpperCase() + '.';
-  const go = $('#go');
-  if (win && lvl < TOTAL) { go.textContent = 'Next level'; go.onclick = () => start(lvl + 1); }
-  else if (win) { go.textContent = 'Back to the map'; go.onclick = showMap; }
-  else { go.textContent = 'Try again'; go.onclick = () => start(lvl); }
-  setTimeout(() => sheet.classList.add('on'), 500);
+
+  save.coins -= cost;
+  persist();
+  coins();
+
+  return true;
 }
 
-/* ---------- Wiring ---------- */
-kb.addEventListener('click', e => { const b = e.target.closest('button'); if (b) press(b.dataset.k); });
-document.addEventListener('keydown', e => {
-  if ($('#game').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
-  if (e.key === 'Enter') press('⏎');
-  else if (e.key === 'Backspace') press('⌫');
-  else if (/^[a-z]$/i.test(e.key)) press(e.key.toLowerCase());
-});
-$('#back').onclick = showMap;
-$('#tomap').onclick = showMap;
+/* ---------- REVEAL A LETTER ---------- */
 
-showMap();
+$('#h1').addEventListener('click', () => {
+  if (over || busy) return;
+
+  const available = [...Array(len).keys()].filter(
+    i => !found[i] && !shown[i]
+  );
+
+  if (!available.length) {
+    say('Nothing left to reveal');
+    return;
+  }
+
+  if (!spend(COST_REVEAL)) return;
+
+  const index = available[
+    Math.floor(Math.random() * available.length)
+  ];
+
+  shown[index] = answer[index];
+  found[index] = true;
+
+  drawHintBar();
+
+  say(
+    'Letter ' + (index + 1) + ' is ' +
+    answer[index].toUpperCase()
+  );
+});
+
+/* ---------- CLEAR INCORRECT KEYS ---------- */
+
+$('#h2').addEventListener('click', () => {
+  if (over || busy) return;
+
+  const pool = [...'abcdefghijklmnopqrstuvwxyz'].filter(
+    character =>
+      !answer.includes(character) &&
+      !keys[character]
+  );
+
+  if (!pool.length) {
+    say('No keys left to clear');
+    return;
+  }
+
+  if (!spend(COST_CLEAR)) return;
+
+  // Choose up to five letters that are not in the answer.
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  const cleared = pool.slice(0, 5);
+
+  cleared.forEach(character => {
+    keys[character] = 'gone';
+  });
+
+  paintKeys();
+
+  say('Cleared ' + cleared.length + ' wrong keys');
+});
+
+/* ---------- LEVEL RESULTS ---------- */
+
+function finish(win) {
+  over = true;
+  busy = false;
+
+  let earnedStars = 0;
+  let bonus = 0;
+
+  if (win) {
+    const attempts = row + 1;
+
+    earnedStars =
+      attempts <= 3 ? 3 :
+      attempts <= 5 ? 2 : 1;
+
+    const previous = starsOf(lvl);
+
+    bonus = previous === 0
+      ? 10 + 5 * earnedStars
+      : Math.max(0, earnedStars - previous) * 5;
+
+    save.stars[lvl - 1] = Math.max(previous, earnedStars);
+    save.coins += bonus;
+
+    persist();
+    coins();
+  }
+
+  $('#stars').textContent = win
+    ? '★'.repeat(earnedStars) + '☆'.repeat(3 - earnedStars)
+    : '';
+
+  $('#rt').textContent = win
+    ? 'Level ' + lvl + ' complete!'
+    : 'Out of tries';
+
+  $('#rs').textContent = win
+    ? (
+        bonus
+          ? 'Amazing! You earned ' + bonus + ' bonus coins.'
+          : 'You matched your previous best. Try for more stars!'
+      )
+    : 'The hidden word was ' + answer.toUpperCase() + '. Keep going!';
+
+  const nextButton = $('#go');
+
+  if (win && lvl < TOTAL) {
+    nextButton.textContent = 'Next level →';
+    nextButton.onclick = () => start(lvl + 1);
+  } else if (win) {
+    nextButton.textContent = 'Back to the map';
+    nextButton.onclick = showMap;
+  } else {
+    nextButton.textContent = 'Try again';
+    nextButton.onclick = () => start(lvl);
+  }
+
+  setTimeout(() => {
+    sheet.classList.add('on');
+  }, 450);
+}
+
+/* ---------- BUTTON WIRING ---------- */
+
+kb.addEventListener('click', event => {
+  const button = event.target.closest('button');
+
+  if (button) {
+    press(button.dataset.k);
+  }
+});
+
+document.addEventListener('keydown', event => {
+  if ($('#game').hidden) return;
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    press('⏎');
+  } else if (event.key === 'Backspace') {
+    event.preventDefault();
+    press('⌫');
+  } else if (/^[a-z]$/i.test(event.key)) {
+    press(event.key.toLowerCase());
+  }
+});
+
+$('#back').addEventListener('click', showMap);
+$('#tomap').addEventListener('click', showMap);
+
+/* ---------- INITIAL SCREEN ---------- */
+
+coins();
+showWelcome();
 </script>
 </body>
-      </html>
-
+</html>
