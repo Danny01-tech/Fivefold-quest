@@ -1,20 +1,18 @@
 {
 "id": "./",
 "name": "Fivefold Quest",
-  "lang": "en"
-  "dir": "ltr"
 "short_name": "Fivefold",
 "description": "An exciting word puzzle adventure with 60 levels.",
+"lang": "en",
+"dir": "ltr",
 "start_url": "./",
 "scope": "./",
 "display": "standalone",
-  "display_override": ["standalone",
-    "minimal-ui"]
+"display_override": ["standalone", "minimal-ui"],
 "orientation": "portrait",
 "background_color": "#0B1020",
 "theme_color": "#0B1020",
-  "categories":["games",
-    "entertainment","puzzles"],
+"categories": ["games", "entertainment", "puzzles"],
 "icons": [
 {
 "src": "icon-192.png",
